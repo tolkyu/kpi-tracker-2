@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KPI Tracker — Support Team</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── LOGIN ─────────────────────────────────────────── -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-box">
+          <svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+        </div>
+        <span>KPI Tracker</span>
+      </div>
+      <h2>Admin login</h2>
+      <p class="sub">Sign in to manage your support team KPIs</p>
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="inp-user" placeholder="admin" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="inp-pass" placeholder="••••••••"/>
+      </div>
+      <div class="login-err" id="login-err">Incorrect username or password</div>
+      <button class="btn-login" id="btn-login">Sign in</button>
+    </div>
+  </div>
+
+  <!-- ── MAIN APP ───────────────────────────────────────── -->
+  <div id="main-screen">
+
+    <div class="topbar">
+      <div class="topbar-l">
+        <div class="tb-logo">
+          <svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+        </div>
+        <span class="tb-title">KPI Tracker</span>
+        <span class="tb-sep"></span>
+        <span class="tb-sub">Support Team</span>
+      </div>
+      <div class="topbar-r">
+        <span class="tb-period" id="tb-period">May 2026</span>
+        <button class="btn-faq" id="btn-faq">
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" stroke-width="1.5"/><path d="M6.5 6.2C6.5 5.3 7.1 4.7 8 4.7s1.5.6 1.5 1.4c0 .7-.4 1.1-1 1.5C7.9 8 7.5 8.4 7.5 9v.3" stroke-width="1.5" stroke-linecap="round"/><circle cx="7.5" cy="11" r=".7" fill="currentColor" stroke="none"/></svg>
+          FAQ
+        </button>
+        <button class="btn-logout" id="btn-logout">Sign out</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="sum-grid" id="sum-grid"></div>
+
+      <div class="legend">
+        <div class="leg b-exceeds">90–100 &nbsp;Exceeds expectations</div>
+        <div class="leg b-meets">75–89 &nbsp;Meets expectations</div>
+        <div class="leg b-needs">55–74 &nbsp;Needs improvement</div>
+        <div class="leg b-below">0–54 &nbsp;Below expectations</div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-hdr">
+          <h3>Team members</h3>
+          <div class="tbl-actions">
+            <div class="period-picker" id="period-picker">
+              <button class="period-btn" id="period-btn">
+                <span id="period-btn-label">May 2026</span>
+                <svg viewBox="0 0 10 6" class="pd-chevron"><polyline points="1,1 5,5 9,1"/></svg>
+              </button>
+              <!-- ── Date picker panel ── -->
+              <div class="dp-panel" id="dp-panel">
+                <div class="dp-presets">
+                  <div class="dp-preset" data-preset="last7">Last 7 days</div>
+                  <div class="dp-preset" data-preset="last14">Last 14 days</div>
+                  <div class="dp-preset" data-preset="lastmonth">Last month</div>
+                  <div class="dp-preset" data-preset="last3m">Last 3 months</div>
+                  <div class="dp-preset" data-preset="last12m">Last 12 months</div>
+                  <div class="dp-preset" data-preset="mtd">Month to date</div>
+                  <div class="dp-preset" data-preset="alltime">All time</div>
+                  <div class="dp-preset" data-preset="custom">Custom</div>
+                </div>
+                <div class="dp-right">
+                  <div class="dp-cal-header">
+                    <button class="dp-nav" id="dp-prev">
+                      <svg viewBox="0 0 8 12"><polyline points="7,1 1,6 7,11"/></svg>
+                    </button>
+                    <div class="dp-cal-titles">
+                      <span id="dp-left-title"></span>
+                      <span id="dp-right-title"></span>
+                    </div>
+                    <button class="dp-nav" id="dp-next">
+                      <svg viewBox="0 0 8 12"><polyline points="1,1 7,6 1,11"/></svg>
+                    </button>
+                  </div>
+                  <div class="dp-cal-grids" id="dp-cal-grids">
+                    <div id="dp-month-left"></div>
+                    <div id="dp-month-right"></div>
+                  </div>
+                  <div class="dp-footer">
+                    <div class="dp-range-display" id="dp-range-display"></div>
+                    <div class="dp-footer-btns">
+                      <button class="dp-btn-cancel" id="dp-cancel">Cancel</button>
+                      <button class="dp-btn-set" id="dp-set">Set Date</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="btn-reset-period" id="btn-reset-period" title="Return to current period">
+              <svg viewBox="0 0 16 16"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.3.8 4.4 2.1"/><polyline points="10.5,0.5 13.5,3.5 10.5,3.5"/></svg>
+            </button>
+            <button class="btn-primary" id="btn-add">
+              <svg viewBox="0 0 14 14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg>
+              Add member
+            </button>
+          </div>
+        </div>
+        <div id="tbl-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL ─────────────────────────────────────────── -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-top">
+        <div>
+          <h3 id="modal-title">Add team member</h3>
+          <p id="modal-sub">Fill in the data for this period</p>
+        </div>
+        <button class="btn-modal-close" id="btn-modal-close">
+          <svg viewBox="0 0 14 14"><line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-name-field">
+        <label>Full name</label>
+        <input type="text" id="m-name" placeholder="e.g. John Smith"/>
+      </div>
+
+      <div class="inp-hint">
+        <p>Collect task counts from your project board (Jira, Linear, Trello). Deadline breaches = completed_at vs due_date.</p>
+      </div>
+
+      <div class="modal-section">Task completion</div>
+      <div class="modal-grid">
+        <div class="mfield">
+          <label>Tasks completed</label>
+          <div class="mfield-sub">Total own tasks closed</div>
+          <input type="number" id="m-done" value="0" min="0"/>
+        </div>
+        <div class="mfield">
+          <label>Closed own tasks</label>
+          <div class="mfield-sub">Completed before deadline</div>
+          <input type="number" id="m-own" value="0" min="0"/>
+        </div>
+      </div>
+
+      <div class="modal-section">Deadline quality</div>
+      <div class="modal-grid-3">
+        <div class="mfield">
+          <label>Overdue &lt; 1 day</label>
+          <div class="mfield-sub">Missed by &lt;1 day</div>
+          <input type="number" id="m-l1" value="0" min="0"/>
+        </div>
+        <div class="mfield">
+          <label>Overdue 1–3 days</label>
+          <div class="mfield-sub">Missed by 1–3 days</div>
+          <input type="number" id="m-l2" value="0" min="0"/>
+        </div>
+        <div class="mfield">
+          <label>Overdue &gt; 3 days</label>
+          <div class="mfield-sub">Missed by &gt;3 days</div>
+          <input type="number" id="m-l3" value="0" min="0"/>
+        </div>
+      </div>
+
+      <div class="modal-section">Teamwork</div>
+      <div class="modal-grid">
+        <div class="mfield">
+          <label>Times assisted</label>
+          <div class="mfield-sub">Helped colleague at 2/2 WIP</div>
+          <input type="number" id="m-help" value="0" min="0"/>
+        </div>
+        <div class="mfield">
+          <label>Helped with closure</label>
+          <div class="mfield-sub">Colleague tasks closed together</div>
+          <input type="number" id="m-hdone" value="0" min="0"/>
+        </div>
+      </div>
+
+      <div class="modal-section">Transparency</div>
+      <div class="modal-grid">
+        <div class="mfield">
+          <label>Blocker reports</label>
+          <div class="mfield-sub">@blocker escalations filed</div>
+          <input type="number" id="m-blk" value="0" min="0"/>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" id="btn-modal-cancel">Cancel</button>
+        <button class="btn-modal-save" id="btn-modal-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FAQ MODAL ────────────────────────────────────────────── -->
+  <div class="modal-overlay" id="faq-modal">
+    <div class="modal faq-modal">
+      <div class="modal-top">
+        <div>
+          <h3>Довідник KPI</h3>
+          <p>Пояснення формул та методологія оцінювання</p>
+        </div>
+        <button class="btn-modal-close" id="btn-faq-close">
+          <svg viewBox="0 0 14 14"><line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/></svg>
+        </button>
+      </div>
+
+      <div class="faq-body">
+
+        <!-- Overall formula -->
+        <div class="faq-overview">
+          <div class="faq-overview-label">Загальна формула</div>
+          <code class="faq-formula-main">KPI = Output×0.35 + Deadline×0.25 + Throughput×0.20 + Teamwork×0.15 + Transparency×0.05</code>
+          <p class="faq-overview-desc">Кожен блок оцінюється від 0 до 100. Підсумковий KPI — також від 0 до 100.</p>
+        </div>
+
+        <!-- Block 1 -->
+        <div class="faq-block faq-green">
+          <div class="faq-block-head">
+            <span class="faq-block-name">Якість виконання</span>
+            <span class="faq-pill faq-pill-green">35%</span>
+          </div>
+          <code class="faq-code">score = closed_own / tasks_done × 100</code>
+          <p class="faq-text">Відсоток задач, які співробітник закрив <strong>самостійно</strong>, від загальної кількості завершених задач у звітному періоді.</p>
+          <div class="faq-source"><span>Звідки брати:</span> дошка проєктів (Jira, Linear, Trello). <em>Tasks completed</em> — всі закриті задачі; <em>Closed own</em> — закриті вчасно без сторонньої допомоги.</div>
+        </div>
+
+        <!-- Block 2 -->
+        <div class="faq-block faq-blue">
+          <div class="faq-block-head">
+            <span class="faq-block-name">Якість дотримання дедлайнів</span>
+            <span class="faq-pill faq-pill-blue">25%</span>
+          </div>
+          <code class="faq-code">penalty = overdue_&lt;1d × 0.5 + overdue_1–3d × 1.0 + overdue_&gt;3d × 2.0</code>
+          <code class="faq-code">score&nbsp;&nbsp; = MAX(0,&nbsp;1 − penalty / tasks_done) × 100</code>
+          <p class="faq-text">Штраф за запізнення накопичується залежно від тривалості прострочення. Чим більше і серйозніше запізнень — тим нижчий бал.</p>
+          <div class="faq-source"><span>Звідки брати:</span> порівнюйте <em>completed_at</em> із <em>due_date</em> у трекері задач.</div>
+        </div>
+
+        <!-- Block 3 -->
+        <div class="faq-block faq-purple">
+          <div class="faq-block-head">
+            <span class="faq-block-name">Продуктивність</span>
+            <span class="faq-pill faq-pill-purple">20%</span>
+          </div>
+          <code class="faq-code">score = MIN(done / team_avg × 100, 100)</code>
+          <p class="faq-text">Порівнює кількість виконаних задач співробітника із середнім показником по команді за той самий період. Максимум — 100 балів.</p>
+          <div class="faq-source"><span>Звідки брати:</span> розраховується автоматично на основі даних усіх учасників у вибраному періоді.</div>
+        </div>
+
+        <!-- Block 4 -->
+        <div class="faq-block faq-amber">
+          <div class="faq-block-head">
+            <span class="faq-block-name">Командна робота</span>
+            <span class="faq-pill faq-pill-amber">15%</span>
+          </div>
+          <code class="faq-code">help_efficiency = helped_closures / times_assisted</code>
+          <code class="faq-code">score&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = MIN(times_assisted / 4 × 100, 100) × help_efficiency</code>
+          <p class="faq-text">Враховує частоту допомоги колегам (при заповненому WIP 2/2) та ефективність — скільки спільних задач було закрито завдяки цій допомозі.</p>
+          <div class="faq-source"><span>Звідки брати:</span> <em>Times assisted</em> — кількість разів, коли брав задачу колеги при 2/2 WIP; <em>Helped w/ closure</em> — закриті спільні задачі.</div>
+        </div>
+
+        <!-- Block 5 -->
+        <div class="faq-block faq-gray">
+          <div class="faq-block-head">
+            <span class="faq-block-name">Прозорість</span>
+            <span class="faq-pill faq-pill-gray">5%</span>
+          </div>
+          <code class="faq-code">score = MIN(blocker_reports × 20, 100)</code>
+          <p class="faq-text">Заохочує своєчасне сповіщення команди про блокери. 5 і більше зафіксованих блокерів дають максимальний бал (100).</p>
+          <div class="faq-source"><span>Звідки брати:</span> кількість @blocker ескалацій у робочому каналі або трекері задач.</div>
+        </div>
+
+        <!-- Grade scale -->
+        <div class="faq-grades">
+          <div class="faq-grades-title">Шкала оцінювання</div>
+          <div class="faq-grades-grid">
+            <div class="faq-grade b-exceeds">⭐ 90–100 &nbsp;·&nbsp; Перевищує очікування</div>
+            <div class="faq-grade b-meets">✓ 75–89 &nbsp;·&nbsp; Відповідає очікуванням</div>
+            <div class="faq-grade b-needs">⚠ 55–74 &nbsp;·&nbsp; Потребує покращення</div>
+            <div class="faq-grade b-below">✕ 0–54 &nbsp;·&nbsp; Нижче очікувань</div>
+          </div>
+        </div>
+
+      </div><!-- .faq-body -->
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script src="app.js"></script>
+</body>
+</html>
