@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id          Int      @id @default(autoincrement())
+  name        String
+  periodStart DateTime @db.Date
+  periodEnd   DateTime @db.Date
+  isManual    Boolean  @default(true)   // false = Asana daily record
+  done        Int      @default(0)
+  own         Int      @default(0)
+  l1          Int      @default(0)
+  l2          Int      @default(0)
+  l3          Int      @default(0)
+  help        Int      @default(0)
+  hdone       Int      @default(0)
+  blk         Int      @default(0)
+
+  @@index([periodStart, periodEnd])
+  @@index([name, periodStart, periodEnd])
+}
+
+model UserMapping {
+  id    Int    @id @default(autoincrement())
+  email String @unique
+  name  String
+}
+
+model SyncedTask {
+  taskGid String @id
+}

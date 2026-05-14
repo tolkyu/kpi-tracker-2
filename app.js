@@ -7,8 +7,11 @@
 const CREDS = { login: 'admin', pass: 'admin123' };
 
 // ── Period state ──────────────────────────────────────────────
-let periodKey   = 'month-2026-05';
-let periodLabel = 'May 2026';
+const _MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const _now = new Date();
+const _mm  = String(_now.getMonth() + 1).padStart(2, '0');
+let periodKey   = `month-${_now.getFullYear()}-${_mm}`;
+let periodLabel = `${_MONTHS_LONG[_now.getMonth()]} ${_now.getFullYear()}`;
 
 // ── Data cache (populated from server per period) ─────────────
 const allData = {};
@@ -413,7 +416,8 @@ function renderTable() {
 function render() {
   renderSummary();
   renderTable();
-  document.getElementById('tb-period').textContent = periodLabel;
+  document.getElementById('tb-period').textContent        = periodLabel;
+  document.getElementById('period-btn-label').textContent = periodLabel;
 }
 
 // ── Modal ─────────────────────────────────────────────────────
@@ -482,7 +486,7 @@ async function saveModal() {
 
 async function delEmp(id) {
   if (!confirm('Remove this team member?')) return;
-  await fetch(`/api/employees/${id}`, { method: 'DELETE' });
+  await fetch(`/api/employees/${id}?periodKey=${encodeURIComponent(periodKey)}`, { method: 'DELETE' });
   allData[periodKey] = emps().filter(e => e.id !== id);
   render();
 }
@@ -569,7 +573,9 @@ document.getElementById('btn-modal-close').addEventListener('click', closeModal)
 document.getElementById('btn-modal-cancel').addEventListener('click', closeModal);
 document.getElementById('btn-modal-save').addEventListener('click', saveModal);
 document.getElementById('modal').addEventListener('click', e => { if(e.target===document.getElementById('modal')) closeModal(); });
-document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeModal(); closeDatePicker(); closeFaq(); } });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeDatePicker(); closeFaq(); closeSyncModal(); closeMappingsModal(); }
+});
 
 // ── FAQ ───────────────────────────────────────────────────────
 function closeFaq() { document.getElementById('faq-modal').classList.remove('open'); }
@@ -580,4 +586,216 @@ document.getElementById('btn-faq').addEventListener('click', () => {
 document.getElementById('btn-faq-close').addEventListener('click', closeFaq);
 document.getElementById('faq-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('faq-modal')) closeFaq();
+});
+
+// ── Toast ─────────────────────────────────────────────────────
+let _toastTimer = null;
+function showToast(msg, ms = 3500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('toast-show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('toast-show'), ms);
+}
+
+// ── Sync modal ────────────────────────────────────────────────
+let _syncPreview = null;
+
+function renderSyncBody(data) {
+  const { mapped, unmapped, newTotal, skippedTotal } = data;
+  const skipNote = skippedTotal ? ` &nbsp;·&nbsp; ${skippedTotal} already synced` : '';
+  let html = `<div class="sync-stats">${newTotal} new task${newTotal !== 1 ? 's' : ''}${skipNote}</div>`;
+
+  if (mapped.length) {
+    html += `<div class="sync-section-label">Will be synced — ${mapped.length} employee${mapped.length !== 1 ? 's' : ''}</div>
+             <div class="sync-rows">`;
+    for (const e of mapped) {
+      html += `<div class="sync-row sync-row-ok">
+        <span class="sync-name">${e.name}</span>
+        <span class="sync-tasks">${e.done}&nbsp;task${e.done !== 1 ? 's' : ''}</span>
+        <span class="sync-breakdown">on‑time:${e.own}&nbsp; &lt;1d:${e.l1}&nbsp; 1‑3d:${e.l2}&nbsp; 3d+:${e.l3}</span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  if (unmapped.length) {
+    html += `<div class="sync-section-label sync-section-warn">Unmapped — will be skipped (${unmapped.length})</div>
+             <div class="sync-rows">`;
+    for (const e of unmapped) {
+      const safeName  = e.asanaName.replace(/'/g, "\\'");
+      const safeEmail = e.email.replace(/'/g, "\\'");
+      html += `<div class="sync-row sync-row-warn">
+        <div class="sync-unm-info">
+          <span class="sync-email">${e.email}</span>
+          <span class="sync-asana-name">${e.asanaName}</span>
+        </div>
+        <span class="sync-tasks">${e.done}&nbsp;task${e.done !== 1 ? 's' : ''}</span>
+        <button class="btn-map-quick" onclick="quickMapFromSync('${safeEmail}','${safeName}')">+ Map</button>
+      </div>`;
+    }
+    html += `</div>
+             <p class="sync-hint">Add a mapping to include these users in future syncs.</p>`;
+  }
+
+  if (!mapped.length && !unmapped.length) {
+    const msg = skippedTotal
+      ? `All ${skippedTotal} tasks for this period are already synced.`
+      : 'No completed tasks found in "Manual Done" for this period.';
+    html += `<div class="sync-empty">${msg}</div>`;
+  }
+
+  return html;
+}
+
+async function openSyncModal() {
+  _syncPreview = null;
+  document.getElementById('sync-period-label').textContent = periodLabel;
+  document.getElementById('sync-body').innerHTML = '<div class="sync-loading">Loading from Asana…</div>';
+  document.getElementById('btn-sync-apply').disabled = true;
+  document.getElementById('btn-sync-apply').textContent = 'Apply sync';
+  document.getElementById('sync-modal').classList.add('open');
+
+  try {
+    const res  = await fetch(`/api/sync/asana/preview?periodKey=${encodeURIComponent(periodKey)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Sync preview failed');
+    _syncPreview = data;
+    document.getElementById('sync-body').innerHTML = renderSyncBody(data);
+    document.getElementById('btn-sync-apply').disabled = data.mapped.length === 0;
+  } catch (err) {
+    document.getElementById('sync-body').innerHTML =
+      `<div class="sync-error">${err.message}</div>`;
+  }
+}
+
+function closeSyncModal() {
+  document.getElementById('sync-modal').classList.remove('open');
+  _syncPreview = null;
+}
+
+async function applySyncModal() {
+  const btn = document.getElementById('btn-sync-apply');
+  btn.disabled = true;
+  btn.textContent = 'Applying…';
+
+  try {
+    const res  = await fetch('/api/sync/asana', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ periodKey }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Sync failed');
+    closeSyncModal();
+    await loadPeriod(periodKey);
+    render();
+    showToast(`Sync complete: ${data.created} added, ${data.updated} updated`);
+  } catch (err) {
+    document.getElementById('sync-body').insertAdjacentHTML(
+      'beforeend',
+      `<div class="sync-error" style="margin-top:8px">${err.message}</div>`
+    );
+    btn.disabled = false;
+    btn.textContent = 'Apply sync';
+  }
+}
+
+function quickMapFromSync(email, asanaName) {
+  closeSyncModal();
+  document.getElementById('map-email').value = email;
+  document.getElementById('map-name').value  = asanaName;
+  openMappingsModal();
+}
+
+document.getElementById('btn-sync').addEventListener('click', openSyncModal);
+document.getElementById('btn-sync-close').addEventListener('click', closeSyncModal);
+document.getElementById('btn-sync-cancel').addEventListener('click', closeSyncModal);
+document.getElementById('btn-sync-apply').addEventListener('click', applySyncModal);
+document.getElementById('sync-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('sync-modal')) closeSyncModal();
+});
+
+// ── Mappings modal ────────────────────────────────────────────
+
+function renderMappingsList(mappings) {
+  if (!mappings.length) {
+    return `<div class="mappings-empty">No mappings yet — add one above.</div>`;
+  }
+  return `<div class="mappings-list">${
+    mappings.map(m => `
+      <div class="mapping-row">
+        <span class="mapping-email">${m.email}</span>
+        <span class="mapping-arrow">→</span>
+        <span class="mapping-name">${m.name}</span>
+        <button class="btn-del-row" onclick="deleteMapping(${m.id})" title="Remove">
+          <svg viewBox="0 0 14 14"><polyline points="1,3 13,3"/><path d="M4,3V1.5h6V3M5,6v5M9,6v5"/><path d="M2,3l1,9h8l1-9"/></svg>
+        </button>
+      </div>`
+    ).join('')
+  }</div>`;
+}
+
+async function loadMappingsList() {
+  try {
+    const res  = await fetch('/api/mappings');
+    const data = await res.json();
+    document.getElementById('mappings-list').innerHTML = renderMappingsList(data);
+  } catch (err) {
+    document.getElementById('mappings-list').innerHTML =
+      `<div class="sync-error">${err.message}</div>`;
+  }
+}
+
+async function openMappingsModal() {
+  document.getElementById('mappings-modal').classList.add('open');
+  await loadMappingsList();
+  setTimeout(() => document.getElementById('map-email').focus(), 50);
+}
+
+function closeMappingsModal() {
+  document.getElementById('mappings-modal').classList.remove('open');
+  document.getElementById('map-email').value = '';
+  document.getElementById('map-name').value  = '';
+}
+
+async function saveMapping() {
+  const email = document.getElementById('map-email').value.trim();
+  const name  = document.getElementById('map-name').value.trim();
+  if (!email || !name) {
+    document.getElementById(!email ? 'map-email' : 'map-name').focus();
+    return;
+  }
+  try {
+    const res  = await fetch('/api/mappings', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email, name }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Save failed');
+    document.getElementById('map-email').value = '';
+    document.getElementById('map-name').value  = '';
+    document.getElementById('map-email').focus();
+    await loadMappingsList();
+  } catch (err) {
+    showToast(err.message);
+  }
+}
+
+async function deleteMapping(id) {
+  if (!confirm('Remove this mapping?')) return;
+  await fetch(`/api/mappings/${id}`, { method: 'DELETE' });
+  await loadMappingsList();
+}
+
+document.getElementById('btn-mappings').addEventListener('click', openMappingsModal);
+document.getElementById('btn-mappings-close').addEventListener('click', closeMappingsModal);
+document.getElementById('btn-mappings-done').addEventListener('click', closeMappingsModal);
+document.getElementById('btn-map-add').addEventListener('click', saveMapping);
+document.getElementById('map-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveMapping();
+});
+document.getElementById('mappings-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('mappings-modal')) closeMappingsModal();
 });

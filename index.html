@@ -119,6 +119,13 @@
             <button class="btn-reset-period" id="btn-reset-period" title="Return to current period">
               <svg viewBox="0 0 16 16"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.3.8 4.4 2.1"/><polyline points="10.5,0.5 13.5,3.5 10.5,3.5"/></svg>
             </button>
+            <button class="btn-reset-period" id="btn-mappings" title="Email → Name mappings">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="5.5" r="2.5"/><path d="M1 14c0-2.8 1.8-4.5 4-4.5"/><path d="M10 9.5h5M12.5 7.5l2.5 2-2.5 2"/></svg>
+            </button>
+            <button class="btn-asana-sync" id="btn-sync">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.3.8 4.4 2.1"/><polyline points="10.5,0.5 13.5,3.5 11,3.5"/></svg>
+              Sync Asana
+            </button>
             <button class="btn-primary" id="btn-add">
               <svg viewBox="0 0 14 14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg>
               Add member
@@ -308,6 +315,54 @@
       </div><!-- .faq-body -->
     </div>
   </div>
+
+  <!-- ── SYNC MODAL ───────────────────────────────────────────── -->
+  <div class="modal-overlay" id="sync-modal">
+    <div class="modal sync-modal-inner">
+      <div class="modal-top">
+        <div>
+          <h3>Sync from Asana</h3>
+          <p>Manual Done → KPI &nbsp;·&nbsp; <span id="sync-period-label"></span></p>
+        </div>
+        <button class="btn-modal-close" id="btn-sync-close">
+          <svg viewBox="0 0 14 14"><line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/></svg>
+        </button>
+      </div>
+      <div id="sync-body"><div class="sync-loading">Loading from Asana…</div></div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" id="btn-sync-cancel">Cancel</button>
+        <button class="btn-modal-save"   id="btn-sync-apply" disabled>Apply sync</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAPPINGS MODAL ────────────────────────────────────────── -->
+  <div class="modal-overlay" id="mappings-modal">
+    <div class="modal mappings-modal-inner">
+      <div class="modal-top">
+        <div>
+          <h3>Email → Name mappings</h3>
+          <p>Map Asana user emails to KPI employee names</p>
+        </div>
+        <button class="btn-modal-close" id="btn-mappings-close">
+          <svg viewBox="0 0 14 14"><line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/></svg>
+        </button>
+      </div>
+      <div class="mapping-add-row">
+        <input type="email" id="map-email" placeholder="user@company.com" autocomplete="off"/>
+        <span class="mapping-arrow-static">→</span>
+        <input type="text"  id="map-name"  placeholder="Employee name"/>
+        <button class="btn-modal-save" id="btn-map-add">Add</button>
+      </div>
+      <div id="mappings-list"></div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" id="btn-mappings-done">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST ─────────────────────────────────────────────────── -->
+  <div id="toast"></div>
 
 </div><!-- #app -->
 
