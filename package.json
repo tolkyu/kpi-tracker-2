@@ -5,10 +5,11 @@
   "main": "server.js",
   "engines": { "node": ">=18" },
   "scripts": {
-    "start": "node --env-file=.env server.js",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "postinstall": "prisma generate"
+    "start":      "node --env-file=.env server.js",
+    "db:generate": "./node_modules/.bin/prisma generate",
+    "db:push":     "./node_modules/.bin/prisma db push",
+    "postinstall": "./node_modules/.bin/prisma generate",
+    "pm2:start":   "npm install && ./node_modules/.bin/prisma db push && pm2 startOrRestart ecosystem.config.js"
   },
   "dependencies": {
     "@prisma/client": "^5.14.0",
