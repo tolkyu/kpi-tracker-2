@@ -192,29 +192,6 @@
         </div>
       </div>
 
-      <div class="modal-section">Teamwork</div>
-      <div class="modal-grid">
-        <div class="mfield">
-          <label>Times assisted</label>
-          <div class="mfield-sub">Helped colleague at 2/2 WIP</div>
-          <input type="number" id="m-help" value="0" min="0"/>
-        </div>
-        <div class="mfield">
-          <label>Helped with closure</label>
-          <div class="mfield-sub">Colleague tasks closed together</div>
-          <input type="number" id="m-hdone" value="0" min="0"/>
-        </div>
-      </div>
-
-      <div class="modal-section">Transparency</div>
-      <div class="modal-grid">
-        <div class="mfield">
-          <label>Blocker reports</label>
-          <div class="mfield-sub">@blocker escalations filed</div>
-          <input type="number" id="m-blk" value="0" min="0"/>
-        </div>
-      </div>
-
       <div class="modal-footer">
         <button class="btn-modal-cancel" id="btn-modal-cancel">Cancel</button>
         <button class="btn-modal-save" id="btn-modal-save">Save</button>
@@ -240,7 +217,7 @@
         <!-- Overall formula -->
         <div class="faq-overview">
           <div class="faq-overview-label">Загальна формула</div>
-          <code class="faq-formula-main">KPI = Output×0.35 + Deadline×0.25 + Throughput×0.20 + Teamwork×0.15 + Transparency×0.05</code>
+          <code class="faq-formula-main">KPI = Output×0.45 + Deadline×0.30 + Throughput×0.25</code>
           <p class="faq-overview-desc">Кожен блок оцінюється від 0 до 100. Підсумковий KPI — також від 0 до 100.</p>
         </div>
 
@@ -248,7 +225,7 @@
         <div class="faq-block faq-green">
           <div class="faq-block-head">
             <span class="faq-block-name">Якість виконання</span>
-            <span class="faq-pill faq-pill-green">35%</span>
+            <span class="faq-pill faq-pill-green">45%</span>
           </div>
           <code class="faq-code">score = closed_own / tasks_done × 100</code>
           <p class="faq-text">Відсоток задач, які співробітник закрив <strong>самостійно</strong>, від загальної кількості завершених задач у звітному періоді.</p>
@@ -259,7 +236,7 @@
         <div class="faq-block faq-blue">
           <div class="faq-block-head">
             <span class="faq-block-name">Якість дотримання дедлайнів</span>
-            <span class="faq-pill faq-pill-blue">25%</span>
+            <span class="faq-pill faq-pill-blue">30%</span>
           </div>
           <code class="faq-code">penalty = overdue_&lt;1d × 0.5 + overdue_1–3d × 1.0 + overdue_&gt;3d × 2.0</code>
           <code class="faq-code">score&nbsp;&nbsp; = MAX(0,&nbsp;1 − penalty / tasks_done) × 100</code>
@@ -271,34 +248,11 @@
         <div class="faq-block faq-purple">
           <div class="faq-block-head">
             <span class="faq-block-name">Продуктивність</span>
-            <span class="faq-pill faq-pill-purple">20%</span>
+            <span class="faq-pill faq-pill-purple">25%</span>
           </div>
           <code class="faq-code">score = MIN(done / team_avg × 100, 100)</code>
           <p class="faq-text">Порівнює кількість виконаних задач співробітника із середнім показником по команді за той самий період. Максимум — 100 балів.</p>
           <div class="faq-source"><span>Звідки брати:</span> розраховується автоматично на основі даних усіх учасників у вибраному періоді.</div>
-        </div>
-
-        <!-- Block 4 -->
-        <div class="faq-block faq-amber">
-          <div class="faq-block-head">
-            <span class="faq-block-name">Командна робота</span>
-            <span class="faq-pill faq-pill-amber">15%</span>
-          </div>
-          <code class="faq-code">help_efficiency = helped_closures / times_assisted</code>
-          <code class="faq-code">score&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = MIN(times_assisted / 4 × 100, 100) × help_efficiency</code>
-          <p class="faq-text">Враховує частоту допомоги колегам (при заповненому WIP 2/2) та ефективність — скільки спільних задач було закрито завдяки цій допомозі.</p>
-          <div class="faq-source"><span>Звідки брати:</span> <em>Times assisted</em> — кількість разів, коли брав задачу колеги при 2/2 WIP; <em>Helped w/ closure</em> — закриті спільні задачі.</div>
-        </div>
-
-        <!-- Block 5 -->
-        <div class="faq-block faq-gray">
-          <div class="faq-block-head">
-            <span class="faq-block-name">Прозорість</span>
-            <span class="faq-pill faq-pill-gray">5%</span>
-          </div>
-          <code class="faq-code">score = MIN(blocker_reports × 20, 100)</code>
-          <p class="faq-text">Заохочує своєчасне сповіщення команди про блокери. 5 і більше зафіксованих блокерів дають максимальний бал (100).</p>
-          <div class="faq-source"><span>Звідки брати:</span> кількість @blocker ескалацій у робочому каналі або трекері задач.</div>
         </div>
 
         <!-- Grade scale -->

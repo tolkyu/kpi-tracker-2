@@ -275,12 +275,10 @@ async function resetToCurrentPeriod() {
 //
 //  Block            Weight  Formula
 //  ─────────────────────────────────────────────────────────────
-//  Output quality    35%    closed_own / tasks_done × 100
-//  Deadline quality  25%    MAX(0, 1 − penalty / done) × 100
+//  Output quality    45%    closed_own / tasks_done × 100
+//  Deadline quality  30%    MAX(0, 1 − penalty / done) × 100
 //                           penalty = l1×0.5 + l2×1.0 + l3×2.0
-//  Throughput        20%    MIN(done / team_avg × 100, 100)
-//  Teamwork          15%    MIN(assists/4×100, 100) × help_efficiency
-//  Transparency       5%    MIN(blockers × 20, 100)
+//  Throughput        25%    MIN(done / team_avg × 100, 100)
 //
 function calcKPI(e) {
   const list    = emps();
@@ -289,11 +287,8 @@ function calcKPI(e) {
   const penalty = e.l1*0.5 + e.l2*1.0 + e.l3*2.0;
   const sD = Math.max(0, 1 - penalty / Math.max(1, e.done)) * 100;
   const sT = Math.min(e.done / Math.max(1, teamAvg) * 100, 100);
-  const helpEff = e.help > 0 ? Math.min(e.hdone / e.help, 1) : 0;
-  const sK = Math.min(e.help / 4 * 100, 100) * helpEff;
-  const sB = Math.min(e.blk * 20, 100);
-  const total = sO*0.35 + sD*0.25 + sT*0.20 + sK*0.15 + sB*0.05;
-  return { sO, sD, sT, sK, sB, total };
+  const total = sO*0.45 + sD*0.30 + sT*0.25;
+  return { sO, sD, sT, total };
 }
 
 // ── Grade helper ──────────────────────────────────────────────
@@ -363,20 +358,16 @@ function renderTable() {
       <th style="width:72px">O/due&lt;1D</th>
       <th style="width:72px">O/due 1-3D</th>
       <th style="width:72px">O/due&gt;3D</th>
-      <th style="width:60px">Assists</th>
-      <th style="width:80px">Hlp closure</th>
-      <th style="width:62px">Blockers</th>
       <th style="width:72px;background:#F3FAF6;color:var(--green-fg)">Output</th>
       <th style="width:72px;background:#EEF4FC;color:var(--blue-fg)">Deadline</th>
       <th style="width:82px;background:#F5F4FE;color:var(--purple-fg)">Throughput</th>
-      <th style="width:72px;background:#FDF8EE;color:var(--amber-fg)">Teamwork</th>
       <th style="width:58px">KPI</th>
       <th style="width:90px;text-align:center">Grade</th>
     </tr></thead>`;
 
   if (!list.length) {
     document.getElementById('tbl-body').innerHTML =
-      `<table>${thead}<tbody><tr><td colspan="15" style="text-align:center;padding:2.5rem;color:var(--muted);font-size:13px">No data for this period — add a team member to get started.</td></tr></tbody></table>`;
+      `<table>${thead}<tbody><tr><td colspan="11" style="text-align:center;padding:2.5rem;color:var(--muted);font-size:13px">No data for this period — add a team member to get started.</td></tr></tbody></table>`;
     return;
   }
 
@@ -398,11 +389,9 @@ function renderTable() {
       </div></td>
       <td class="num">${e.done}</td><td class="num">${e.own}</td>
       <td class="num">${e.l1}</td><td class="num">${e.l2}</td><td class="num">${e.l3}</td>
-      <td class="num">${e.help}</td><td class="num">${e.hdone}</td><td class="num">${e.blk}</td>
       <td style="background:#F7FBF8">${kpiMini(k.sO,'var(--green-acc)')}</td>
       <td style="background:#EFF5FC">${kpiMini(k.sD,'var(--blue-acc)')}</td>
       <td style="background:#F5F4FE">${kpiMini(k.sT,'var(--purple-acc)')}</td>
-      <td style="background:#FDFAF3">${kpiMini(k.sK,'var(--amber-acc)')}</td>
       <td style="text-align:center"><span style="font-family:var(--font-mono);font-size:17px;font-weight:600;color:${g.acc}">${k.total.toFixed(1)}</span></td>
       <td style="text-align:center"><span class="badge ${g.cls}">${g.icon} ${g.label}</span></td>
     </tr>`;
@@ -433,12 +422,9 @@ function openModal(title, sub, id = null) {
     document.getElementById('m-l1').value    = e.l1;
     document.getElementById('m-l2').value    = e.l2;
     document.getElementById('m-l3').value    = e.l3;
-    document.getElementById('m-help').value  = e.help;
-    document.getElementById('m-hdone').value = e.hdone;
-    document.getElementById('m-blk').value   = e.blk;
   } else {
     document.getElementById('m-name').value = '';
-    ['m-done','m-own','m-l1','m-l2','m-l3','m-help','m-hdone','m-blk']
+    ['m-done','m-own','m-l1','m-l2','m-l3']
       .forEach(i => { document.getElementById(i).value = '0'; });
   }
   document.getElementById('modal').classList.add('open');
@@ -459,9 +445,8 @@ async function saveModal() {
   const name = document.getElementById('m-name').value.trim();
   if (!name) { document.getElementById('m-name').focus(); return; }
   const values = { name,
-    done: getVal('m-done'), own:  getVal('m-own'),
-    l1:   getVal('m-l1'),   l2:   getVal('m-l2'),  l3: getVal('m-l3'),
-    help: getVal('m-help'), hdone:getVal('m-hdone'),blk:getVal('m-blk'),
+    done: getVal('m-done'), own: getVal('m-own'),
+    l1:   getVal('m-l1'),   l2:  getVal('m-l2'),  l3: getVal('m-l3'),
   };
   if (editingId !== null) {
     await fetch(`/api/employees/${editingId}`, {

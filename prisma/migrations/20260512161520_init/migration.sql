@@ -1,8 +1,10 @@
 -- CreateTable
 CREATE TABLE "Employee" (
     "id" SERIAL NOT NULL,
-    "periodKey" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "periodStart" DATE NOT NULL,
+    "periodEnd" DATE NOT NULL,
+    "isManual" BOOLEAN NOT NULL DEFAULT true,
     "done" INTEGER NOT NULL DEFAULT 0,
     "own" INTEGER NOT NULL DEFAULT 0,
     "l1" INTEGER NOT NULL DEFAULT 0,
@@ -24,8 +26,18 @@ CREATE TABLE "UserMapping" (
     CONSTRAINT "UserMapping_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "SyncedTask" (
+    "taskGid" TEXT NOT NULL,
+
+    CONSTRAINT "SyncedTask_pkey" PRIMARY KEY ("taskGid")
+);
+
 -- CreateIndex
-CREATE INDEX "Employee_periodKey_idx" ON "Employee"("periodKey");
+CREATE INDEX "Employee_periodStart_periodEnd_idx" ON "Employee"("periodStart", "periodEnd");
+
+-- CreateIndex
+CREATE INDEX "Employee_name_periodStart_periodEnd_idx" ON "Employee"("name", "periodStart", "periodEnd");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserMapping_email_key" ON "UserMapping"("email");
